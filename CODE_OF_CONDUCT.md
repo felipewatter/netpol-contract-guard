@@ -1,0 +1,3 @@
+# Contributor Code of Conduct
+
+Participants must communicate respectfully and professionally. Harassment, discriminatory language, threats, spam and attempts to publish others' secrets are unacceptable. Technical disagreements should focus on reproducible evidence, documented Kubernetes semantics and maintenance cost. Report inappropriate behavior privately to repository maintainers using GitHub-supported private contact channels when possible. Maintainers may remove offensive or unsafe material or restrict participation as necessary. This is a concise project-specific code of conduct and does not claim affiliation with other initiatives.

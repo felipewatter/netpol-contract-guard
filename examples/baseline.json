@@ -1,0 +1,237 @@
+{
+  "apiVersion": "netpol.contractguard/v1",
+  "namespaces": [
+    {
+      "name": "web",
+      "labels": {
+        "team": "frontend"
+      }
+    },
+    {
+      "name": "api",
+      "labels": {
+        "team": "backend"
+      }
+    },
+    {
+      "name": "data",
+      "labels": {
+        "team": "storage"
+      }
+    }
+  ],
+  "pods": [
+    {
+      "name": "client",
+      "namespace": "web",
+      "ip": "10.244.1.10",
+      "labels": {
+        "app": "client"
+      }
+    },
+    {
+      "name": "service",
+      "namespace": "api",
+      "ip": "10.244.2.10",
+      "labels": {
+        "app": "service"
+      },
+      "ports": [
+        {
+          "name": "http",
+          "port": 8080
+        }
+      ]
+    },
+    {
+      "name": "db",
+      "namespace": "data",
+      "ip": "10.244.3.10",
+      "labels": {
+        "app": "db"
+      },
+      "ports": [
+        {
+          "name": "postgres",
+          "port": 5432
+        }
+      ]
+    },
+    {
+      "name": "rogue",
+      "namespace": "data",
+      "ip": "10.244.3.11",
+      "labels": {
+        "app": "rogue"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "NetworkPolicy",
+      "metadata": {
+        "name": "web-egress",
+        "namespace": "web"
+      },
+      "spec": {
+        "podSelector": {
+          "matchLabels": {}
+        },
+        "policyTypes": [
+          "Egress"
+        ],
+        "ingress": [],
+        "egress": [
+          {
+            "to": [
+              {
+                "namespaceSelector": {
+                  "matchLabels": {
+                    "kubernetes.io/metadata.name": "api"
+                  }
+                },
+                "podSelector": {
+                  "matchLabels": {
+                    "app": "service"
+                  }
+                }
+              }
+            ],
+            "ports": [
+              {
+                "port": 8080
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "NetworkPolicy",
+      "metadata": {
+        "name": "api-ingress",
+        "namespace": "api"
+      },
+      "spec": {
+        "podSelector": {
+          "matchLabels": {
+            "app": "service"
+          }
+        },
+        "policyTypes": [
+          "Ingress"
+        ],
+        "ingress": [
+          {
+            "from": [
+              {
+                "namespaceSelector": {
+                  "matchLabels": {
+                    "team": "frontend"
+                  }
+                },
+                "podSelector": {
+                  "matchLabels": {
+                    "app": "client"
+                  }
+                }
+              }
+            ],
+            "ports": [
+              {
+                "port": "http"
+              }
+            ]
+          }
+        ],
+        "egress": []
+      }
+    },
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "NetworkPolicy",
+      "metadata": {
+        "name": "api-egress",
+        "namespace": "api"
+      },
+      "spec": {
+        "podSelector": {
+          "matchLabels": {
+            "app": "service"
+          }
+        },
+        "policyTypes": [
+          "Egress"
+        ],
+        "ingress": [],
+        "egress": [
+          {
+            "to": [
+              {
+                "namespaceSelector": {
+                  "matchLabels": {
+                    "team": "storage"
+                  }
+                },
+                "podSelector": {
+                  "matchLabels": {
+                    "app": "db"
+                  }
+                }
+              }
+            ],
+            "ports": [
+              {
+                "port": 5432
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "NetworkPolicy",
+      "metadata": {
+        "name": "db-ingress",
+        "namespace": "data"
+      },
+      "spec": {
+        "podSelector": {
+          "matchLabels": {
+            "app": "db"
+          }
+        },
+        "policyTypes": [
+          "Ingress"
+        ],
+        "ingress": [
+          {
+            "from": [
+              {
+                "namespaceSelector": {
+                  "matchLabels": {
+                    "team": "backend"
+                  }
+                },
+                "podSelector": {
+                  "matchLabels": {
+                    "app": "service"
+                  }
+                }
+              }
+            ],
+            "ports": [
+              {
+                "port": "postgres"
+              }
+            ]
+          }
+        ],
+        "egress": []
+      }
+    }
+  ]
+}

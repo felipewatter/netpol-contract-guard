@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=75,<85", "wheel>=0.44,<1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netpol-contract-guard"
+version = "0.1.0"
+description = "Offline Kubernetes NetworkPolicy connectivity contract validator and regression gate"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "Felipe Watter"}]
+keywords = ["kubernetes", "networkpolicy", "network-security", "devsecops", "policy-as-code", "sarif"]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Operating System :: OS Independent", "Topic :: Security", "Topic :: System :: Networking"]
+dependencies = []
+
+[project.scripts]
+netpol-contract-guard = "netpol_contract_guard.cli:main"
+
+[project.urls]
+Repository = "https://github.com/felipewatter/netpol-contract-guard"
+Issues = "https://github.com/felipewatter/netpol-contract-guard/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,49 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - name: Checkout pinned action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Python pinned action
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package
+        run: python -m pip install --no-deps -e .
+      - name: Syntax validation
+        run: python -m compileall -q src tests scripts
+      - name: Unittest and adversarial regressions
+        run: python -m unittest discover -s tests -v
+      - name: Audit reference fixture (must pass)
+        run: python -m netpol_contract_guard audit --snapshot examples/baseline.json --contracts examples/contracts.json --fail-on high
+      - name: Candidate fixture (must block)
+        shell: python
+        run: |
+          import subprocess, sys
+          args = [sys.executable, '-m', 'netpol_contract_guard', 'compare', '--before', 'examples/baseline.json', '--after', 'examples/candidate-risky.json', '--contracts', 'examples/contracts.json', '--fail-on', 'high']
+          result = subprocess.run(args, check=False)
+          if result.returncode != 2:
+              raise SystemExit(f'expected security gate exit 2, got {result.returncode}')
+      - name: Artifact generation and verification
+        run: python scripts/build_release.py dist

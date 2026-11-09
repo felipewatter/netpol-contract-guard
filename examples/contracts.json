@@ -1,0 +1,55 @@
+{
+  "apiVersion": "netpol.contractguard/v1",
+  "contracts": [
+    {
+      "id": "WEB_TO_API_HTTP",
+      "source": "web/client",
+      "destination": "api/service",
+      "protocol": "TCP",
+      "port": 8080,
+      "expect": "allow",
+      "severity": "critical",
+      "reason": "Web frontend must reach API"
+    },
+    {
+      "id": "API_TO_DB_SQL",
+      "source": "api/service",
+      "destination": "data/db",
+      "protocol": "TCP",
+      "port": 5432,
+      "expect": "allow",
+      "severity": "critical",
+      "reason": "API requires database"
+    },
+    {
+      "id": "ROGUE_TO_DB_DENY",
+      "source": "data/rogue",
+      "destination": "data/db",
+      "protocol": "TCP",
+      "port": 5432,
+      "expect": "deny",
+      "severity": "critical",
+      "reason": "Storage namespace lateral movement must be blocked"
+    },
+    {
+      "id": "WEB_TO_DB_DENY",
+      "source": "web/client",
+      "destination": "data/db",
+      "protocol": "TCP",
+      "port": 5432,
+      "expect": "deny",
+      "severity": "high",
+      "reason": "Frontend must not access database"
+    },
+    {
+      "id": "EXTERNAL_TO_API_DENY",
+      "source": "ip:203.0.113.20",
+      "destination": "api/service",
+      "protocol": "TCP",
+      "port": 8080,
+      "expect": "deny",
+      "severity": "high",
+      "reason": "No direct external ingress to API"
+    }
+  ]
+}
